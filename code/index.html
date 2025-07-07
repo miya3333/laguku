@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube to MP3 Downloader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input[type="text"] {
+            width: 300px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #status {
+            margin-top: 20px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>YouTube to MP3 Downloader</h1>
+        <input type="text" id="youtubeUrl" placeholder="Masukkan URL YouTube">
+        <button onclick="downloadMp3()">Download MP3</button>
+        <p id="status"></p>
+    </div>
+    <script>
+        async function downloadMp3() {
+            const url = document.getElementById('youtubeUrl').value;
+            const status = document.getElementById('status');
+            if (!url) {
+                status.textContent = 'Masukkan URL YouTube!';
+                return;
+            }
+            status.textContent = 'Sedang memproses...';
+            try {
+                const response = await fetch('/download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = 'audio.mp3';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    status.textContent = 'Download selesai!';
+                } else {
+                    const error = await response.json();
+                    status.textContent = 'Error: ' + error.error;
+                }
+            } catch (err) {
+                status.textContent = 'Error: ' + err.message;
+            }
+        }
+    </script>
+</body>
+</html>
